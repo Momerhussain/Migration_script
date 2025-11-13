@@ -23,15 +23,15 @@ const CONFIG = {
   collection: "messages",
 
   // All of July 2025 (UTC)
-  start: "2025-07-01T00:00:00.000Z",
-  end: "2025-07-30T23:59:59.000Z",
+  start: "2025-09-30T19:00:00.000Z",
+  end: "2025-10-31T19:00:00.000Z",
 
   routed: undefined,
   status: undefined,
   source: undefined,
   uid: 'ablwapper',
 
-  out: "./ABLexportsJUNE/ablJune.csv",
+  out: "./ABLexportsOct2/ablOct.csv",
   fields: [
     "uid",
     "source_addr",
@@ -41,7 +41,7 @@ const CONFIG = {
     "handset_time",
     "msg_id",
     "status",
-    "packet_count"
+    // "packet_count"
   ],
 
   secondary: true,
@@ -143,12 +143,13 @@ function buildQuery(lastId) {
   if (CONFIG.status != null) {
     q.status = Array.isArray(CONFIG.status)
       ? { $in: CONFIG.status }
-      : (CONFIG.status === 'FAILED'
+      : (CONFIG.status === 'DTN'
         ? { $in: ["UNDELIV", "ESME_RSUBMITFAIL", "FAILED", "REJECTD"] }
         : CONFIG.status);
   }
 
-  if (lastId) q._id = { $gt: lastId };
+  // if (lastId) q._id = { $gt: lastId };
+  if (lastId) q._id = { $gte: lastId };  // 👈 changed to >=
   return q;
 }
 
@@ -200,7 +201,7 @@ async function writeRow(row) {
 // ========== STATUS + NETWORK_TIME RULES ==========
 function mapStatus(s) {
   if (s === 'DELIVRD') return 'DTH';
-  if (['UNDELIV', 'ESME_RSUBMITFAIL', 'FAILED', 'REJECTD'].includes(s)) return 'FAILED';
+  if (['UNDELIV', 'ESME_RSUBMITFAIL', 'FAILED', 'REJECTD'].includes(s)) return 'DTN';
   return 'DTN';
 }
 
@@ -241,6 +242,9 @@ let lastProcessedId = null;
       });
 
       for await (const doc of cursor) {
+        if (lastProcessedId && doc._id.equals(lastProcessedId)) {
+          continue; // skip duplicate resume row
+        }
         if (rowsInCurrentFile >= CONFIG.MAX_ROWS_PER_FILE) {
           await closeCurrentFile();
           await openNewFile();

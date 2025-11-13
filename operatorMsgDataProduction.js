@@ -19,8 +19,8 @@ const CONFIG = {
   uri: "mongodb+srv://eocean:ZpUozwwszNOB6QQX@sms-gateway.qvex3.mongodb.net/jasmin", // <-- your Mongo URL
   db: "jasmin",                                  // <-- database name
   collection: "messages",                          // <-- collection
-  start: "2025-07-08T00:00:00Z",
-  end:   "2025-08-01T00:00:00Z",                 // <-- end datetime (exclusive)
+  start: "2025-09-30T00:00:00Z",
+  end:   "2025-10-31T00:00:00Z",                 // <-- end datetime (exclusive)
   routed: "telenor81190",
   source: "81190",                          // <-- routed_cid filter (array)
   out: "messages_export_81190_telenor.csv",                      // <-- output file name
